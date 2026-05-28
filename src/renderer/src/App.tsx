@@ -3,35 +3,40 @@ import { DescriptionPanel } from './components/DescriptionPanel'
 import { DiffPanel } from './components/DiffPanel'
 import { FileTreePanel } from './components/FileTreePanel'
 import { PrHeader } from './components/PrHeader'
+import { useAppTheme } from './hooks/useAppTheme'
 import { usePreferences } from './hooks/usePreferences'
 import { useSession } from './hooks/useSession'
 
 function EmptyState(): React.JSX.Element {
   return (
     <div className="empty-state">
-      <h1>Differ</h1>
-      <p>Review GitHub and GitLab pull requests from your terminal.</p>
-      <pre className="empty-state-code">{`differ                          # auto-detect PR for current branch
+      <div className="empty-state-inner">
+        <div className="empty-state-mark" aria-hidden="true" />
+        <h1>Differ</h1>
+        <p>Review GitHub and GitLab pull requests from your terminal.</p>
+        <pre className="empty-state-code">{`differ                          # auto-detect PR for current branch
 differ 42                       # PR number in current repo
 differ https://github.com/...   # PR URL`}</pre>
+      </div>
     </div>
   )
 }
 
 function App(): React.JSX.Element {
+  useAppTheme()
   const { session, loading } = useSession()
   const { preferences, setDiffLayout, setSidebarWidth, toggleDescription } = usePreferences()
-  const [selectedPath, setSelectedPath] = useState<string | null>(null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const selectedFile = document.documentElement.dataset.selectedFile
+  const [selectedPath, setSelectedPath] = useState<string | null>(
+    selectedFile ? selectedFile : null
+  )
+  const [sidebarOpen, setSidebarOpen] = useState(
+    document.documentElement.dataset.sidebarHidden !== 'true'
+  )
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null)
 
   const defaultSelectedPath = useMemo(() => session?.files[0]?.path ?? null, [session])
-
-  useEffect(() => {
-    if (selectedPath == null && defaultSelectedPath) {
-      setSelectedPath(defaultSelectedPath)
-    }
-  }, [defaultSelectedPath, selectedPath])
+  const activePath = selectedPath ?? defaultSelectedPath
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -45,7 +50,14 @@ function App(): React.JSX.Element {
   }, [])
 
   if (loading) {
-    return <div className="app-shell app-shell--loading">Loading pull request…</div>
+    return (
+      <div className="app-shell app-shell--loading">
+        <div className="loading-state" role="status">
+          <span className="loading-spinner" aria-hidden="true" />
+          <p>Loading pull request…</p>
+        </div>
+      </div>
+    )
   }
 
   if (!session) {
@@ -81,7 +93,7 @@ function App(): React.JSX.Element {
           <>
             <FileTreePanel
               session={session}
-              selectedPath={selectedPath}
+              selectedPath={activePath}
               onSelectPath={setSelectedPath}
               width={preferences.sidebarWidth}
             />
@@ -99,9 +111,11 @@ function App(): React.JSX.Element {
         <div className="workspace-main">
           <DiffPanel
             patch={session.patch}
-            selectedPath={selectedPath}
+            selectedPath={activePath}
             diffLayout={preferences.diffLayout}
             onLayoutChange={setDiffLayout}
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen((open) => !open)}
           />
           <DescriptionPanel
             description={session.description}
