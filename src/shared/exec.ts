@@ -40,7 +40,9 @@ export async function runCommand(
       const exitCode = code ?? 1
       if (reject && exitCode !== 0) {
         rejectPromise(
-          new Error(`${file} ${args.join(' ')} failed (${exitCode}): ${stderr.trim() || stdout.trim()}`)
+          new Error(
+            `${file} ${args.join(' ')} failed (${exitCode}): ${stderr.trim() || stdout.trim()}`
+          )
         )
         return
       }

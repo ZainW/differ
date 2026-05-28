@@ -3,7 +3,9 @@ import { FileTree, useFileTree } from '@pierre/trees/react'
 import type { GitStatusEntry } from '@pierre/trees'
 import type { PullRequestSession } from '../../../shared/types/session'
 
-function toGitStatus(status: PullRequestSession['files'][number]['status']): GitStatusEntry['status'] {
+function toGitStatus(
+  status: PullRequestSession['files'][number]['status']
+): GitStatusEntry['status'] {
   switch (status) {
     case 'added':
       return 'added'
@@ -29,6 +31,10 @@ export function FileTreePanel({
   onSelectPath,
   width
 }: FileTreePanelProps): React.JSX.Element {
+  const isMac =
+    window.differ?.platform === 'darwin' ||
+    (typeof navigator !== 'undefined' && /Mac/i.test(navigator.userAgent))
+
   const paths = useMemo(() => session.files.map((f) => f.path), [session.files])
   const gitStatus = useMemo(
     () => session.files.map((f) => ({ path: f.path, status: toGitStatus(f.status) })),
@@ -58,11 +64,15 @@ export function FileTreePanel({
   }, [model, gitStatus, paths, selectedPath])
 
   return (
-    <aside className="file-tree-panel" style={{ width }}>
+    <aside
+      className={`file-tree-panel ${isMac ? 'file-tree-panel--mac' : ''}`}
+      style={{ width }}
+      data-testid="file-tree-panel"
+    >
       <FileTree
         model={model}
         className="file-tree-host"
-        header={<div className="file-tree-heading">Changed files ({session.files.length})</div>}
+        header={<div className="file-tree-heading">Changed Files ({session.files.length})</div>}
       />
     </aside>
   )

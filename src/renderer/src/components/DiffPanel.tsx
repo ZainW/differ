@@ -1,8 +1,18 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { parsePatchFiles } from '@pierre/diffs'
 import { FileDiff } from '@pierre/diffs/react'
 import type { FileDiffMetadata } from '@pierre/diffs/react'
+import { useAppTheme } from '../hooks/useAppTheme'
 import type { DiffLayout } from '../hooks/usePreferences'
+
+function isVisualTestMode(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.dataset.visualTest === 'true'
+}
+
+function resolveDiffThemeType(theme: ReturnType<typeof useAppTheme>): 'dark' | 'light' | 'system' {
+  if (isVisualTestMode()) return 'dark'
+  return theme
+}
 
 function countLineStats(file: FileDiffMetadata): { additions: number; deletions: number } {
   let additions = 0
@@ -14,19 +24,30 @@ function countLineStats(file: FileDiffMetadata): { additions: number; deletions:
   return { additions, deletions }
 }
 
+function fileLabel(path: string | null): string {
+  if (!path) return 'No file selected'
+  const parts = path.split('/')
+  return parts[parts.length - 1] || path
+}
+
 interface DiffPanelProps {
   patch: string
   selectedPath: string | null
   diffLayout: DiffLayout
   onLayoutChange: (layout: DiffLayout) => void
+  sidebarOpen: boolean
+  onToggleSidebar: () => void
 }
 
 export function DiffPanel({
   patch,
   selectedPath,
   diffLayout,
-  onLayoutChange
+  onLayoutChange,
+  sidebarOpen,
+  onToggleSidebar
 }: DiffPanelProps): React.JSX.Element {
+  const theme = useAppTheme()
   const parsedFiles = useMemo(() => {
     if (!patch.trim()) return []
     return parsePatchFiles(patch, 'differ-session').flatMap((p) => p.files)
@@ -34,7 +55,9 @@ export function DiffPanel({
 
   const visibleFiles = useMemo(() => {
     if (!selectedPath) return parsedFiles
-    return parsedFiles.filter((file) => file.name === selectedPath || file.prevName === selectedPath)
+    return parsedFiles.filter(
+      (file) => file.name === selectedPath || file.prevName === selectedPath
+    )
   }, [parsedFiles, selectedPath])
 
   const totals = useMemo(() => {
@@ -49,30 +72,63 @@ export function DiffPanel({
     )
   }, [visibleFiles])
 
+  useEffect(() => {
+    if (visibleFiles.length === 0) {
+      delete document.documentElement.dataset.visualReady
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      document.documentElement.dataset.visualReady = 'true'
+    }, 1200)
+
+    return () => {
+      window.clearTimeout(timer)
+      delete document.documentElement.dataset.visualReady
+    }
+  }, [visibleFiles, diffLayout])
+
   return (
-    <section className="diff-panel">
+    <section className="diff-panel" data-testid="diff-panel">
       <div className="diff-toolbar">
-        <div className="diff-layout-toggle" role="group" aria-label="Diff layout">
+        <div className="diff-toolbar-start">
           <button
             type="button"
-            className={diffLayout === 'split' ? 'is-active' : ''}
-            aria-pressed={diffLayout === 'split'}
-            onClick={() => onLayoutChange('split')}
+            className="sidebar-toggle"
+            aria-pressed={sidebarOpen}
+            aria-label={sidebarOpen ? 'Hide file tree' : 'Show file tree'}
+            title={sidebarOpen ? 'Hide file tree (⌘\\)' : 'Show file tree (⌘\\)'}
+            onClick={onToggleSidebar}
           >
-            Split
+            <span className="sidebar-toggle-icon" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            className={diffLayout === 'unified' ? 'is-active' : ''}
-            aria-pressed={diffLayout === 'unified'}
-            onClick={() => onLayoutChange('unified')}
-          >
-            Unified
-          </button>
+          <span className="diff-file-label" title={selectedPath ?? undefined}>
+            {fileLabel(selectedPath)}
+          </span>
         </div>
-        <div className="diff-stats" aria-live="polite">
-          <span className="diff-stat diff-stat--add">+{totals.additions}</span>
-          <span className="diff-stat diff-stat--del">−{totals.deletions}</span>
+        <div className="diff-toolbar-end">
+          <div className="diff-layout-toggle" role="group" aria-label="Diff layout">
+            <button
+              type="button"
+              className={diffLayout === 'split' ? 'is-active' : ''}
+              aria-pressed={diffLayout === 'split'}
+              onClick={() => onLayoutChange('split')}
+            >
+              Split
+            </button>
+            <button
+              type="button"
+              className={diffLayout === 'unified' ? 'is-active' : ''}
+              aria-pressed={diffLayout === 'unified'}
+              onClick={() => onLayoutChange('unified')}
+            >
+              Unified
+            </button>
+          </div>
+          <div className="diff-stats" aria-live="polite">
+            <span className="diff-stat diff-stat--add">+{totals.additions}</span>
+            <span className="diff-stat diff-stat--del">−{totals.deletions}</span>
+          </div>
         </div>
       </div>
 
@@ -83,15 +139,17 @@ export function DiffPanel({
           visibleFiles.map((fileDiff) => (
             <FileDiff
               key={fileDiff.name}
+              className="diff-file-diff"
               fileDiff={fileDiff}
               disableWorkerPool
               options={{
                 diffStyle: diffLayout,
+                disableFileHeader: true,
                 theme: {
                   dark: 'pierre-dark',
                   light: 'pierre-light'
                 },
-                themeType: 'system',
+                themeType: resolveDiffThemeType(theme),
                 overflow: 'wrap',
                 hunkSeparators: 'line-info'
               }}

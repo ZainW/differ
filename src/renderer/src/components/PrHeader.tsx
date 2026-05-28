@@ -1,4 +1,8 @@
-import type { CheckStatus, PullRequestSession, PullRequestState } from '../../../shared/types/session'
+import type {
+  CheckStatus,
+  PullRequestSession,
+  PullRequestState
+} from '../../../shared/types/session'
 
 function stateLabel(state: PullRequestState): string {
   switch (state) {
@@ -31,13 +35,22 @@ function checkTone(checks: PullRequestSession['checks']): CheckStatus {
 
 interface PrHeaderProps {
   session: PullRequestSession
+  sidebarOpen?: boolean
 }
 
-export function PrHeader({ session }: PrHeaderProps): React.JSX.Element {
+export function PrHeader({ session, sidebarOpen = true }: PrHeaderProps): React.JSX.Element {
   const tone = checkTone(session.checks)
+  const isMac =
+    window.differ?.platform === 'darwin' ||
+    (typeof navigator !== 'undefined' && /Mac/i.test(navigator.userAgent))
+
+  const shouldShift = isMac && !sidebarOpen
 
   return (
-    <header className="pr-header">
+    <header
+      className={`pr-header ${shouldShift ? 'pr-header--mac-shifted' : ''}`}
+      data-testid="pr-header"
+    >
       <div className="pr-header-top">
         <div className="pr-header-title-row">
           <span className="pr-provider">{session.provider === 'github' ? 'GitHub' : 'GitLab'}</span>
@@ -53,6 +66,7 @@ export function PrHeader({ session }: PrHeaderProps): React.JSX.Element {
           onClick={() => window.differ.openExternal(session.url)}
         >
           Open in browser
+          <span className="pr-open-link-icon" aria-hidden="true" />
         </button>
       </div>
 

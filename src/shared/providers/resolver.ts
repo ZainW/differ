@@ -1,5 +1,11 @@
-import type { ResolvedPullRequest } from '../types/session'
-import { getCurrentBranch, getRepoContext, isGithubHost, isGitlabHost, providerFromHost } from './git'
+import type { RepoContext, ResolvedPullRequest } from '../types/session'
+import {
+  getCurrentBranch,
+  getRepoContext,
+  isGithubHost,
+  isGitlabHost,
+  providerFromHost
+} from './git'
 
 export class ResolveError extends Error {
   constructor(message: string) {
@@ -66,7 +72,13 @@ export async function resolvePullRequestRef(
     return parsed
   }
 
-  const repo = await getRepoContext(cwd)
+  let repo: RepoContext | null
+  try {
+    repo = await getRepoContext(cwd)
+  } catch (error) {
+    throw new ResolveError(error instanceof Error ? error.message : String(error))
+  }
+
   if (!repo) {
     throw new ResolveError('Not a git repository. Run differ from a repo or pass a PR URL.')
   }
@@ -102,7 +114,9 @@ export async function resolvePullRequestRef(
   }
 }
 
-export function isAutoDetect(ref: ResolvedPullRequest): ref is ResolvedPullRequest & { branch: string } {
+export function isAutoDetect(
+  ref: ResolvedPullRequest
+): ref is ResolvedPullRequest & { branch: string } {
   return ref.number === -1 && typeof ref.branch === 'string'
 }
 

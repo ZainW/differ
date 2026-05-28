@@ -24,7 +24,9 @@ async function tryGlabToken(): Promise<string | null> {
   try {
     const { stdout } = await runCommand('glab', ['auth', 'status'], { reject: false })
     if (!stdout.includes('Logged in')) return null
-    const { stdout: token } = await runCommand('glab', ['config', 'get', 'token'], { reject: false })
+    const { stdout: token } = await runCommand('glab', ['config', 'get', 'token'], {
+      reject: false
+    })
     return token.trim() || null
   } catch {
     return null

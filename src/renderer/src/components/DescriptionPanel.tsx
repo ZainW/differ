@@ -11,13 +11,9 @@ export function DescriptionPanel({
 }: DescriptionPanelProps): React.JSX.Element {
   return (
     <section className={`description-panel ${open ? 'is-open' : ''}`}>
-      <button
-        type="button"
-        className="description-toggle"
-        aria-expanded={open}
-        onClick={onToggle}
-      >
-        Description
+      <button type="button" className="description-toggle" aria-expanded={open} onClick={onToggle}>
+        <span>Description</span>
+        <span className="description-chevron" aria-hidden="true" />
       </button>
       {open && (
         <div className="description-body">

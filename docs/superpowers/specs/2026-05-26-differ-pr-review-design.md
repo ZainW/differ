@@ -9,14 +9,14 @@ Terminal-first PR review app: run `differ` from any git repo to open an Electron
 
 ## Requirements
 
-| Area | Decision |
-|------|----------|
-| Invocation | Smart resolution: URL → PR number → auto-detect current branch PR |
-| Auth | CLI auth first (`gh` / `glab`), fallback to `GITHUB_TOKEN` / `GITLAB_TOKEN` |
-| PR surface (v1) | Title, description, labels, reviewers, CI checks, file tree, diff |
-| Future (v2) | Inline comments, review threads, activity timeline (typed stubs in v1) |
-| Platforms | GitHub + GitLab from day one via provider adapters |
-| Diff layout | Split default; toggle unified; persist preference |
+| Area            | Decision                                                                    |
+| --------------- | --------------------------------------------------------------------------- |
+| Invocation      | Smart resolution: URL → PR number → auto-detect current branch PR           |
+| Auth            | CLI auth first (`gh` / `glab`), fallback to `GITHUB_TOKEN` / `GITLAB_TOKEN` |
+| PR surface (v1) | Title, description, labels, reviewers, CI checks, file tree, diff           |
+| Future (v2)     | Inline comments, review threads, activity timeline (typed stubs in v1)      |
+| Platforms       | GitHub + GitLab from day one via provider adapters                          |
+| Diff layout     | Split default; toggle unified; persist preference                           |
 
 ## Architecture
 

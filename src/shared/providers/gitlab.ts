@@ -25,7 +25,11 @@ function mapState(state: string, draft: boolean): PullRequestState {
   return 'open'
 }
 
-function mapFileStatus(newFile: boolean, deletedFile: boolean, renamedFile: boolean): FileChangeStatus {
+function mapFileStatus(
+  newFile: boolean,
+  deletedFile: boolean,
+  renamedFile: boolean
+): FileChangeStatus {
   if (newFile) return 'added'
   if (deletedFile) return 'deleted'
   if (renamedFile) return 'renamed'

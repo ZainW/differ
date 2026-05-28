@@ -77,9 +77,11 @@ async function findOpenPrByBranch(
   token: string
 ): Promise<number> {
   const head = `${owner}:${branch}`
-  const pulls = await githubFetch<
-    Array<{ number: number; head: { ref: string }; state: string }>
-  >(host, `/repos/${owner}/${repo}/pulls?head=${encodeURIComponent(head)}&state=open`, token)
+  const pulls = await githubFetch<Array<{ number: number; head: { ref: string }; state: string }>>(
+    host,
+    `/repos/${owner}/${repo}/pulls?head=${encodeURIComponent(head)}&state=open`,
+    token
+  )
   const match = pulls.find((p) => p.head.ref === branch && p.state === 'open')
   if (!match) {
     throw new Error(`No open pull request found for branch "${branch}". Try: differ <pr-url>`)
@@ -122,9 +124,11 @@ export async function fetchGithubPullRequest(
         deletions: number
       }>
     >(ref.host, `/repos/${ref.owner}/${ref.repo}/pulls/${number}/files?per_page=100`, token),
-    githubFetch<
-      Array<{ user: { login: string } | null; state: string }>
-    >(ref.host, `/repos/${ref.owner}/${ref.repo}/pulls/${number}/reviews`, token),
+    githubFetch<Array<{ user: { login: string } | null; state: string }>>(
+      ref.host,
+      `/repos/${ref.owner}/${ref.repo}/pulls/${number}/reviews`,
+      token
+    ),
     githubFetch<{
       check_runs: Array<{ name: string; status: string; conclusion: string | null }>
     }>(ref.host, `/repos/${ref.owner}/${ref.repo}/commits/${pr.head.sha}/check-runs`, token).catch(
