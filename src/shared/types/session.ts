@@ -63,4 +63,7 @@ export type ResolvedPullRequest = {
   number: number
   host: string
   branch?: string
+  local?: boolean
+  localMode?: 'uncommitted' | 'branch'
+  baseBranch?: string
 }
