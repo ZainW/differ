@@ -34,11 +34,14 @@ program
 ```
 
 **Exclusivity check:**
+
 ```typescript
 const { pr, uncommitted, branch } = options
 const modeCount = [pr, uncommitted, branch].filter(Boolean).length
 if (modeCount > 1) {
-  console.error('Error: Options --pr, --uncommitted, and --branch are mutually exclusive. Please specify only one mode.')
+  console.error(
+    'Error: Options --pr, --uncommitted, and --branch are mutually exclusive. Please specify only one mode.'
+  )
   process.exit(1)
 }
 ```
@@ -73,7 +76,7 @@ export async function fetchLocalPullRequest(
   const branch = (await getCurrentBranch(cwd)) || 'local'
   const baseBranch = ref.baseBranch || (await getBaseBranch(cwd)) || 'main'
   // ...
-  
+
   let patch = ''
   let files: PullRequestSession['files'] = []
   let title = 'Local Changes'

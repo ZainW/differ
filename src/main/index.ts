@@ -37,14 +37,14 @@ function createWindow(session: PullRequestSession | null): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    void shell.openExternal(details.url)
     return { action: 'deny' }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    void mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    void mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
   mainWindow.webContents.once('did-finish-load', () => {
@@ -54,7 +54,7 @@ function createWindow(session: PullRequestSession | null): void {
   })
 }
 
-app.whenReady().then(() => {
+void app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.differ.app')
 
   app.on('browser-window-created', (_, window) => {
@@ -65,7 +65,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('session:get', () => session)
   ipcMain.handle('session:open-external', (_event, url: string) => {
-    shell.openExternal(url)
+    void shell.openExternal(url)
   })
 
   createWindow(session)
@@ -76,7 +76,9 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  if (sessionPath) {
+  const keepSession =
+    process.env.DIFFER_KEEP_SESSION === '1' || process.env.DIFFER_VISUAL_TEST === '1'
+  if (sessionPath && !keepSession) {
     try {
       unlinkSync(sessionPath)
     } catch {

@@ -16,23 +16,23 @@ tests. No UI interaction needed — deterministic, fast, isolated screenshots.
 
 ## State Dimensions
 
-| Dimension     | Values                        | URL param              | Default     |
-|---------------|-------------------------------|------------------------|-------------|
-| App state     | `loaded`, `empty`, `loading`  | `state`                | loaded      |
-| Diff layout   | `split`, `unified`            | `layout`               | split       |
-| Description   | `0` (closed), `1` (open)      | `description`          | 0           |
-| Sidebar       | `0` (hidden), `1` (visible)   | `sidebar`              | 1           |
-| File selected | `default` (first), path, `none` | `file`               | default     |
-| Theme         | `dark` only (forced by visualTest flag) | —                   | dark        |
+| Dimension     | Values                                  | URL param     | Default |
+| ------------- | --------------------------------------- | ------------- | ------- |
+| App state     | `loaded`, `empty`, `loading`            | `state`       | loaded  |
+| Diff layout   | `split`, `unified`                      | `layout`      | split   |
+| Description   | `0` (closed), `1` (open)                | `description` | 0       |
+| Sidebar       | `0` (hidden), `1` (visible)             | `sidebar`     | 1       |
+| File selected | `default` (first), path, `none`         | `file`        | default |
+| Theme         | `dark` only (forced by visualTest flag) | —             | dark    |
 
 ## Test Matrix
 
 ### App-level states (no session dependency)
 
-| Test                      | Params              | Selector / wait target        |
-|---------------------------|---------------------|-------------------------------|
-| Empty state               | `state=empty`       | `.empty-state`                |
-| Loading state             | `state=loading`     | `.loading-state`              |
+| Test          | Params          | Selector / wait target |
+| ------------- | --------------- | ---------------------- |
+| Empty state   | `state=empty`   | `.empty-state`         |
+| Loading state | `state=loading` | `.loading-state`       |
 
 ### Session-loaded states (fixture: `github-review`)
 
@@ -117,11 +117,11 @@ function stateLabel(state: AuditState): string {
 
 ### Wait strategy
 
-| State   | Condition                                     |
-|---------|-----------------------------------------------|
-| loaded  | `waitForReviewReady()` (same as review.spec)  |
-| empty   | `.empty-state` visible                        |
-| loading | `.loading-state` visible                      |
+| State   | Condition                                    |
+| ------- | -------------------------------------------- |
+| loaded  | `waitForReviewReady()` (same as review.spec) |
+| empty   | `.empty-state` visible                       |
+| loading | `.loading-state` visible                     |
 
 ### Snapshot naming
 

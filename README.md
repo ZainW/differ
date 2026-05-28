@@ -39,13 +39,27 @@ pnpm typecheck
 pnpm test
 ```
 
+## Visual regression (Playwright)
+
+Playwright serves a dedicated visual harness (`src/renderer/visual.html`) with fixture PR sessions and compares screenshots of the renderer UI.
+
+```bash
+pnpm test:visual                 # build harness + run snapshot tests
+pnpm test:visual:update          # refresh baseline snapshots
+pnpm test:visual:report          # open the HTML report after a run
+```
+
+Snapshots live in `tests/visual/review.spec.ts-snapshots/`. Fixtures are in `tests/visual/fixtures/`.
+
+The harness sets `data-visual-test` to force Pierre dark theme and waits for `data-visual-ready` after diffs render.
+
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl+\` | Toggle file tree sidebar |
-| `Cmd/Ctrl+Shift+D` | Toggle split/unified diff |
-| `/` | Focus file tree search (via Pierre trees) |
+| Shortcut           | Action                                    |
+| ------------------ | ----------------------------------------- |
+| `Cmd/Ctrl+\`       | Toggle file tree sidebar                  |
+| `Cmd/Ctrl+Shift+D` | Toggle split/unified diff                 |
+| `/`                | Focus file tree search (via Pierre trees) |
 
 ## Architecture
 

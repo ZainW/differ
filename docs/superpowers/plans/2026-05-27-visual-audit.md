@@ -12,17 +12,18 @@
 
 ## File Summary
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/renderer/src/visual-main.tsx` | Modify | Add `sidebar`, `file`, `state=loading` URL params |
-| `src/renderer/src/App.tsx` | Modify | Read initial sidebar + file state from dataset attrs |
-| `tests/visual/audit.spec.ts` | Create | Parameterized audit spec with 18 screenshots |
+| File                               | Action | Purpose                                              |
+| ---------------------------------- | ------ | ---------------------------------------------------- |
+| `src/renderer/src/visual-main.tsx` | Modify | Add `sidebar`, `file`, `state=loading` URL params    |
+| `src/renderer/src/App.tsx`         | Modify | Read initial sidebar + file state from dataset attrs |
+| `tests/visual/audit.spec.ts`       | Create | Parameterized audit spec with 18 screenshots         |
 
 ---
 
 ### Task 1: Extend `visual-main.tsx` with new URL params
 
 **Files:**
+
 - Modify: `src/renderer/src/visual-main.tsx`
 
 - [ ] **Step 1: Read current visual-main.tsx to understand the state setup**
@@ -82,6 +83,7 @@ Expected: builds without errors
 ### Task 2: Modify `App.tsx` to read dataset attrs
 
 **Files:**
+
 - Modify: `src/renderer/src/App.tsx`
 
 - [ ] **Step 1: Read current App.tsx to find initial state lines**
@@ -94,11 +96,13 @@ line 30 has `const [sidebarOpen, setSidebarOpen] = useState(true)`
 - [ ] **Step 2: Change sidebarOpen initializer**
 
 Replace:
+
 ```typescript
 const [sidebarOpen, setSidebarOpen] = useState(true)
 ```
 
 With:
+
 ```typescript
 const [sidebarOpen, setSidebarOpen] = useState(
   document.documentElement.dataset.sidebarHidden !== 'true'
@@ -108,16 +112,16 @@ const [sidebarOpen, setSidebarOpen] = useState(
 - [ ] **Step 3: Change selectedPath initializer**
 
 Replace:
+
 ```typescript
 const [selectedPath, setSelectedPath] = useState<string | null>(null)
 ```
 
 With:
+
 ```typescript
 const selectedFile = document.documentElement.dataset.selectedFile
-const [selectedPath, setSelectedPath] = useState<string | null>(
-  selectedFile ? selectedFile : null
-)
+const [selectedPath, setSelectedPath] = useState<string | null>(selectedFile ? selectedFile : null)
 ```
 
 - [ ] **Step 4: Verify the visual harness builds**
@@ -130,6 +134,7 @@ Expected: builds without errors
 ### Task 3: Write the audit spec (`audit.spec.ts`)
 
 **Files:**
+
 - Create: `tests/visual/audit.spec.ts`
 
 - [ ] **Step 1: Write the complete audit spec**
@@ -211,10 +216,9 @@ test.describe('visual audit', () => {
           test(`session state: ${label}`, async ({ page }) => {
             await page.goto(buildURL(state))
             await waitForReviewReady(page)
-            await expect(page.locator('.app-shell')).toHaveScreenshot(
-              `audit-${label}.png`,
-              { fullPage: true }
-            )
+            await expect(page.locator('.app-shell')).toHaveScreenshot(`audit-${label}.png`, {
+              fullPage: true
+            })
           })
         }
       }

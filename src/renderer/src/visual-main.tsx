@@ -9,6 +9,7 @@ import githubReviewSession from '../../../tests/visual/fixtures/github-review.se
 declare global {
   interface Window {
     differ: {
+      platform?: string
       getSession: () => Promise<PullRequestSession | null>
       onSessionLoad: (callback: (session: PullRequestSession) => void) => () => void
       openExternal: (url: string) => Promise<void>
@@ -47,6 +48,7 @@ if (fileParam) {
 }
 
 window.differ = {
+  platform: 'darwin',
   getSession: async () => {
     if (params.get('state') === 'loading') {
       return new Promise<PullRequestSession>(() => {})

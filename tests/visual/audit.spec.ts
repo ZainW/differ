@@ -79,10 +79,9 @@ test.describe('visual audit', () => {
           test(`session state: ${label}`, async ({ page }) => {
             await page.goto(buildURL(state))
             await waitForReviewReady(page, state.sidebar !== false)
-            await expect(page.locator('.app-shell')).toHaveScreenshot(
-              `audit-${label}.png`,
-              { fullPage: true }
-            )
+            await expect(page.locator('.app-shell')).toHaveScreenshot(`audit-${label}.png`, {
+              fullPage: true
+            })
           })
         }
       }

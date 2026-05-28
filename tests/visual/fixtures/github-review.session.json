@@ -1,0 +1,56 @@
+{
+  "provider": "github",
+  "url": "https://github.com/acme/differ/pull/42",
+  "number": 42,
+  "title": "feat: add visual regression harness",
+  "state": "open",
+  "author": {
+    "name": "alex-dev",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/1?v=4"
+  },
+  "base": {
+    "ref": "main",
+    "sha": "abc123"
+  },
+  "head": {
+    "ref": "feat/visual-harness",
+    "sha": "def456"
+  },
+  "description": "## Summary\n\nAdds Playwright visual snapshots for the review UI.\n\n## Test plan\n\n- [x] Split diff layout\n- [x] Unified diff layout\n- [x] Description panel",
+  "labels": [
+    { "name": "enhancement", "color": "a2eeef" },
+    { "name": "visual", "color": "fbca04" }
+  ],
+  "reviewers": [
+    { "login": "reviewer-one", "state": "approved" },
+    { "login": "reviewer-two", "state": "pending" }
+  ],
+  "checks": [
+    { "name": "build", "status": "success" },
+    { "name": "lint", "status": "success" },
+    { "name": "visual", "status": "pending" }
+  ],
+  "files": [
+    {
+      "path": "src/auth.ts",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 1
+    },
+    {
+      "path": "src/visual/ready.ts",
+      "status": "added",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "README.md",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 1
+    }
+  ],
+  "patch": "diff --git a/README.md b/README.md\nindex 1111111..2222222 100644\n--- a/README.md\n+++ b/README.md\n@@ -1,4 +1,5 @@\n # differ\n \n Review pull requests from your terminal.\n+Includes visual regression tests.\n \ndiff --git a/src/auth.ts b/src/auth.ts\nindex 3333333..4444444 100644\n--- a/src/auth.ts\n+++ b/src/auth.ts\n@@ -1,5 +1,9 @@\n export function authenticate(token: string) {\n-  return token.length > 0\n+  if (!token.trim()) return false\n+  return validateToken(token)\n+}\n+\n+export function validateToken(token: string) {\n+  return token.startsWith('differ_')\n }\n \n export function logout() {\ndiff --git a/src/visual/ready.ts b/src/visual/ready.ts\nnew file mode 100644\nindex 0000000..5555555\n--- /dev/null\n+++ b/src/visual/ready.ts\n@@ -0,0 +1,8 @@\n+export function markVisualReady() {\n+  document.documentElement.dataset.visualReady = 'true'\n+}\n+\n+export function clearVisualReady() {\n+  delete document.documentElement.dataset.visualReady\n+}\n+\n",
+  "comments": [],
+  "timeline": []
+}
