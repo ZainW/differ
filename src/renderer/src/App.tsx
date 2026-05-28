@@ -87,7 +87,6 @@ function App(): React.JSX.Element {
 
   return (
     <div className="app-shell">
-      <PrHeader session={session} />
       <div className="workspace">
         {sidebarOpen && (
           <>
@@ -109,6 +108,7 @@ function App(): React.JSX.Element {
           </>
         )}
         <div className="workspace-main">
+          <PrHeader session={session} sidebarOpen={sidebarOpen} />
           <DiffPanel
             patch={session.patch}
             selectedPath={activePath}

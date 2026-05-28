@@ -189,8 +189,17 @@ button:focus-visible {
   -webkit-app-region: drag;
 }
 
-.pr-header--mac {
+.pr-header--mac-shifted {
   padding-left: 5.5rem;
+}
+
+.file-tree-panel--mac {
+  padding-top: 2.25rem;
+  -webkit-app-region: drag;
+}
+
+.file-tree-host {
+  -webkit-app-region: no-drag;
 }
 
 .pr-header-top {
