@@ -3,6 +3,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 import type { PullRequestSession } from '../shared/types/session'
 
 const api = {
+  platform: process.platform,
   getSession: (): Promise<PullRequestSession | null> => ipcRenderer.invoke('session:get'),
   onSessionLoad: (callback: (session: PullRequestSession) => void): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, session: PullRequestSession): void => {

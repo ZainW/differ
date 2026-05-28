@@ -3,6 +3,7 @@ import type { PullRequestSession } from '../../shared/types/session'
 declare global {
   interface Window {
     differ: {
+      platform?: string
       getSession: () => Promise<PullRequestSession | null>
       onSessionLoad: (callback: (session: PullRequestSession) => void) => () => void
       openExternal: (url: string) => Promise<void>

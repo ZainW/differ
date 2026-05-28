@@ -1,4 +1,8 @@
-import type { CheckStatus, PullRequestSession, PullRequestState } from '../../../shared/types/session'
+import type {
+  CheckStatus,
+  PullRequestSession,
+  PullRequestState
+} from '../../../shared/types/session'
 
 function stateLabel(state: PullRequestState): string {
   switch (state) {
@@ -35,9 +39,12 @@ interface PrHeaderProps {
 
 export function PrHeader({ session }: PrHeaderProps): React.JSX.Element {
   const tone = checkTone(session.checks)
+  const isMac =
+    window.differ?.platform === 'darwin' ||
+    (typeof navigator !== 'undefined' && /Mac/i.test(navigator.userAgent))
 
   return (
-    <header className="pr-header">
+    <header className={`pr-header ${isMac ? 'pr-header--mac' : ''}`} data-testid="pr-header">
       <div className="pr-header-top">
         <div className="pr-header-title-row">
           <span className="pr-provider">{session.provider === 'github' ? 'GitHub' : 'GitLab'}</span>
@@ -53,6 +60,7 @@ export function PrHeader({ session }: PrHeaderProps): React.JSX.Element {
           onClick={() => window.differ.openExternal(session.url)}
         >
           Open in browser
+          <span className="pr-open-link-icon" aria-hidden="true" />
         </button>
       </div>
 
