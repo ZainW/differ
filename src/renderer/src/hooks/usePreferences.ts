@@ -3,8 +3,10 @@ import { useCallback, useEffect, useState } from 'react'
 export type DiffLayout = 'split' | 'unified'
 
 const STORAGE_KEY = 'differ.preferences'
+const MIN_SIDEBAR_WIDTH = 220
+const MAX_SIDEBAR_WIDTH = 480
 
-interface Preferences {
+export interface Preferences {
   diffLayout: DiffLayout
   sidebarWidth: number
   descriptionOpen: boolean
@@ -16,11 +18,36 @@ const defaults: Preferences = {
   descriptionOpen: false
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function clampSidebarWidth(width: number): number {
+  return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, width))
+}
+
+export function normalizePreferences(value: unknown): Preferences {
+  if (!isRecord(value)) return defaults
+
+  const diffLayout: DiffLayout =
+    value.diffLayout === 'unified' || value.diffLayout === 'split'
+      ? value.diffLayout
+      : defaults.diffLayout
+  const sidebarWidth =
+    typeof value.sidebarWidth === 'number' && Number.isFinite(value.sidebarWidth)
+      ? clampSidebarWidth(value.sidebarWidth)
+      : defaults.sidebarWidth
+  const descriptionOpen =
+    typeof value.descriptionOpen === 'boolean' ? value.descriptionOpen : defaults.descriptionOpen
+
+  return { diffLayout, sidebarWidth, descriptionOpen }
+}
+
 function readPreferences(): Preferences {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaults
-    return { ...defaults, ...JSON.parse(raw) }
+    return normalizePreferences(JSON.parse(raw))
   } catch {
     return defaults
   }
@@ -34,28 +61,35 @@ export function usePreferences(): {
 } {
   const [preferences, setPreferences] = useState<Preferences>(readPreferences)
 
-  const persist = useCallback((next: Preferences) => {
-    setPreferences(next)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  const persist = useCallback((createNext: (current: Preferences) => Preferences) => {
+    setPreferences((current) => {
+      const next = normalizePreferences(createNext(current))
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      } catch {
+        return next
+      }
+      return next
+    })
   }, [])
 
   const setDiffLayout = useCallback(
     (diffLayout: DiffLayout) => {
-      persist({ ...preferences, diffLayout })
+      persist((current) => ({ ...current, diffLayout }))
     },
-    [persist, preferences]
+    [persist]
   )
 
   const setSidebarWidth = useCallback(
     (sidebarWidth: number) => {
-      persist({ ...preferences, sidebarWidth })
+      persist((current) => ({ ...current, sidebarWidth }))
     },
-    [persist, preferences]
+    [persist]
   )
 
   const toggleDescription = useCallback(() => {
-    persist({ ...preferences, descriptionOpen: !preferences.descriptionOpen })
-  }, [persist, preferences])
+    persist((current) => ({ ...current, descriptionOpen: !current.descriptionOpen }))
+  }, [persist])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

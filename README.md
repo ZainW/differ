@@ -39,6 +39,20 @@ pnpm typecheck
 pnpm test
 ```
 
+## Release builds
+
+```bash
+pnpm build:mac
+pnpm build:win
+pnpm build:linux
+```
+
+macOS builds notarize automatically when one supported Apple credential set is present:
+
+- `APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER`
+- `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`
+- `APPLE_KEYCHAIN_PROFILE` with optional `APPLE_KEYCHAIN`
+
 ## Visual regression (Playwright)
 
 Playwright serves a dedicated visual harness (`src/renderer/visual.html`) with fixture PR sessions and compares screenshots of the renderer UI.

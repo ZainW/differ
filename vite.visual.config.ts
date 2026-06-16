@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     outDir: resolve('out/visual'),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       input: resolve('src/renderer/visual.html')
     }

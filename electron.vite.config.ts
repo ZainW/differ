@@ -15,6 +15,9 @@ export default defineConfig({
     optimizeDeps: {
       include: ['@pierre/diffs', '@pierre/diffs/react', '@pierre/trees', '@pierre/trees/react']
     },
+    build: {
+      chunkSizeWarningLimit: 800
+    },
     plugins: [react()]
   }
 })

@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import type { PullRequestSession } from '../shared/types/session'
 
+const APP_ID = 'com.zainw.differ'
 let sessionPath: string | null = null
 
 function readSessionFromArgs(): PullRequestSession | null {
@@ -28,7 +29,7 @@ function createWindow(session: PullRequestSession | null): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: process.env.DIFFER_DISABLE_SANDBOX !== '1'
     }
   })
 
@@ -37,7 +38,7 @@ function createWindow(session: PullRequestSession | null): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    void shell.openExternal(details.url)
+    void openExternalUrl(details.url)
     return { action: 'deny' }
   })
 
@@ -54,8 +55,18 @@ function createWindow(session: PullRequestSession | null): void {
   })
 }
 
+async function openExternalUrl(url: string): Promise<void> {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return
+    await shell.openExternal(parsed.toString())
+  } catch {
+    return
+  }
+}
+
 void app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.differ.app')
+  electronApp.setAppUserModelId(APP_ID)
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -64,8 +75,8 @@ void app.whenReady().then(() => {
   const session = readSessionFromArgs()
 
   ipcMain.handle('session:get', () => session)
-  ipcMain.handle('session:open-external', (_event, url: string) => {
-    void shell.openExternal(url)
+  ipcMain.handle('session:open-external', async (_event, url: string) => {
+    await openExternalUrl(url)
   })
 
   createWindow(session)
@@ -81,9 +92,7 @@ app.on('window-all-closed', () => {
   if (sessionPath && !keepSession) {
     try {
       unlinkSync(sessionPath)
-    } catch {
-      // ignore cleanup errors
-    }
+    } catch {}
   }
   if (process.platform !== 'darwin') {
     app.quit()
