@@ -19,7 +19,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  identity: 'Developer ID Application: ZAIN XERXES WANIA (XU3M3P2M34)'
+  identity: 'ZAIN XERXES WANIA (XU3M3P2M34)'
   hardenedRuntime: true
   gatekeeperAssess: false
   forceCodeSigning: true
