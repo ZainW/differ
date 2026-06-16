@@ -9,6 +9,7 @@ import { ResolveError, resolvePullRequestRef, isAutoDetect } from '../shared/pro
 import { writeSession } from '../shared/session'
 import { isInsideWorkTree, getRepoContext } from '../shared/providers/git'
 import type { ResolvedPullRequest, PullRequestSession } from '../shared/types/session'
+import { resolveAppRoot } from './paths'
 
 const program = new Command()
 
@@ -133,7 +134,7 @@ program
   )
 
 async function launchElectron(sessionPath: string): Promise<void> {
-  const appRoot = process.cwd()
+  const appRoot = resolveAppRoot(__dirname, process.cwd())
   const builtMain = join(appRoot, 'out/main/index.js')
 
   if (!existsSync(builtMain)) {
@@ -151,7 +152,7 @@ async function launchElectron(sessionPath: string): Promise<void> {
     return
   }
 
-  const electronPath = resolveElectronPath()
+  const electronPath = resolveElectronPath(appRoot)
   const child = spawn(electronPath, ['.', `--session=${sessionPath}`], {
     cwd: appRoot,
     stdio: 'inherit',
@@ -171,8 +172,8 @@ function waitForExit(child: ReturnType<typeof spawn>): Promise<void> {
   })
 }
 
-function resolveElectronPath(): string {
-  const local = join(process.cwd(), 'node_modules', '.bin', 'electron')
+function resolveElectronPath(appRoot: string): string {
+  const local = join(appRoot, 'node_modules', '.bin', 'electron')
   if (existsSync(local)) return local
   return require('electron') as string
 }

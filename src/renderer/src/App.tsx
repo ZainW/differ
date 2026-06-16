@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { DescriptionPanel } from './components/DescriptionPanel'
-import { DiffPanel } from './components/DiffPanel'
-import { FileTreePanel } from './components/FileTreePanel'
 import { PrHeader } from './components/PrHeader'
 import { useAppTheme } from './hooks/useAppTheme'
 import { usePreferences } from './hooks/usePreferences'
 import { useSession } from './hooks/useSession'
+
+const DiffPanel = lazy(() =>
+  import('./components/DiffPanel').then((module) => ({ default: module.DiffPanel }))
+)
+const FileTreePanel = lazy(() =>
+  import('./components/FileTreePanel').then((module) => ({ default: module.FileTreePanel }))
+)
 
 function EmptyState(): React.JSX.Element {
   return (
@@ -19,6 +24,14 @@ differ 42                       # PR number in current repo
 differ https://github.com/...   # PR URL`}</pre>
       </div>
     </div>
+  )
+}
+
+function DiffPanelFallback(): React.JSX.Element {
+  return (
+    <section className="diff-panel" data-testid="diff-panel">
+      <div className="diff-empty">Loading diff…</div>
+    </section>
   )
 }
 
@@ -88,35 +101,39 @@ function App(): React.JSX.Element {
   return (
     <div className="app-shell">
       <div className="workspace">
-        {sidebarOpen && (
-          <>
-            <FileTreePanel
-              session={session}
-              selectedPath={activePath}
-              onSelectPath={setSelectedPath}
-              width={preferences.sidebarWidth}
-            />
-            <div
-              className="sidebar-resizer"
-              role="separator"
-              aria-orientation="vertical"
-              aria-label="Resize file tree"
-              onPointerDown={onResizePointerDown}
-              onPointerMove={onResizePointerMove}
-              onPointerUp={onResizePointerUp}
-            />
-          </>
-        )}
+        <Suspense fallback={null}>
+          {sidebarOpen && (
+            <>
+              <FileTreePanel
+                session={session}
+                selectedPath={activePath}
+                onSelectPath={setSelectedPath}
+                width={preferences.sidebarWidth}
+              />
+              <div
+                className="sidebar-resizer"
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize file tree"
+                onPointerDown={onResizePointerDown}
+                onPointerMove={onResizePointerMove}
+                onPointerUp={onResizePointerUp}
+              />
+            </>
+          )}
+        </Suspense>
         <div className="workspace-main">
           <PrHeader session={session} sidebarOpen={sidebarOpen} />
-          <DiffPanel
-            patch={session.patch}
-            selectedPath={activePath}
-            diffLayout={preferences.diffLayout}
-            onLayoutChange={setDiffLayout}
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen((open) => !open)}
-          />
+          <Suspense fallback={<DiffPanelFallback />}>
+            <DiffPanel
+              patch={session.patch}
+              selectedPath={activePath}
+              diffLayout={preferences.diffLayout}
+              onLayoutChange={setDiffLayout}
+              sidebarOpen={sidebarOpen}
+              onToggleSidebar={() => setSidebarOpen((open) => !open)}
+            />
+          </Suspense>
           <DescriptionPanel
             description={session.description}
             open={preferences.descriptionOpen}

@@ -22,7 +22,7 @@ async function wait(ms) {
 function runOSAScript(script) {
   try {
     return execSync(`osascript -e '${script}'`).toString().trim()
-  } catch (e) {
+  } catch {
     return null
   }
 }

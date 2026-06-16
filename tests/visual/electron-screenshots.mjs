@@ -1,7 +1,7 @@
 import { _electron as electron } from '@playwright/test'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { mkdirSync, writeFileSync, cpSync, existsSync } from 'fs'
+import { mkdirSync, rmSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '../..')
@@ -15,51 +15,48 @@ async function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-async function takeScreenshot(app, name) {
+async function takeScreenshot(app, name, selector) {
   const window = await app.firstWindow()
   await window.waitForLoadState('domcontentloaded')
-  await sleep(3000) // generous wait for React render + diff parse
+  await window.waitForSelector(selector)
+  await sleep(1500)
   const path = resolve(outDir, `${name}.png`)
   await window.screenshot({ path, type: 'png' })
   console.log(`  -> ${name}.png`)
   return window
 }
 
-// ── Empty state ──────────────────────────────────────────────
+async function launchDiffer(name, args = []) {
+  const userDataDir = resolve(outDir, `${name}-user-data`)
+  rmSync(userDataDir, { recursive: true, force: true })
+  return electron.launch({
+    args: [`--user-data-dir=${userDataDir}`, ...args],
+    env: { ...process.env, DIFFER_KEEP_SESSION: '1' }
+  })
+}
+
 console.log('1/4: Empty state (no session)')
 {
-  const app = await electron.launch({
-    args: [mainEntry],
-    env: { ...process.env, DIFFER_KEEP_SESSION: '1' }
-  })
-  await takeScreenshot(app, '01-empty-state')
+  const app = await launchDiffer('01-empty-state', [mainEntry])
+  await takeScreenshot(app, '01-empty-state', '.empty-state')
   await app.close()
 }
 
-// ── Session loaded — split layout ────────────────────────────
 console.log('2/4: Session loaded — split layout')
 {
-  const app = await electron.launch({
-    args: [mainEntry, `--session=${sessionPath}`],
-    env: { ...process.env, DIFFER_KEEP_SESSION: '1' }
-  })
-  const window = await takeScreenshot(app, '02-session-split')
+  const app = await launchDiffer('02-session-split', [mainEntry, `--session=${sessionPath}`])
+  await takeScreenshot(app, '02-session-split', '[data-testid="pr-header"]')
   await app.close()
 }
 
-// ── Session loaded — unified layout (via localStorage pref) ──
 console.log('3/4: Session loaded — unified layout')
 {
-  const app = await electron.launch({
-    args: [mainEntry, `--session=${sessionPath}`],
-    env: { ...process.env, DIFFER_KEEP_SESSION: '1' }
-  })
+  const app = await launchDiffer('03-session-unified', [mainEntry, `--session=${sessionPath}`])
   const window = await app.firstWindow()
   await window.waitForLoadState('domcontentloaded')
   await window.waitForSelector('[data-testid="pr-header"]')
   await sleep(1000)
 
-  // Toggle to unified layout by clicking the "Unified" button
   const unifiedBtn = window.locator('.diff-layout-toggle button:has-text("Unified")')
   await unifiedBtn.click()
   await sleep(1500)
@@ -70,19 +67,14 @@ console.log('3/4: Session loaded — unified layout')
   await app.close()
 }
 
-// ── Session loaded — description panel open ──────────────────
 console.log('4/4: Session loaded — description panel open')
 {
-  const app = await electron.launch({
-    args: [mainEntry, `--session=${sessionPath}`],
-    env: { ...process.env, DIFFER_KEEP_SESSION: '1' }
-  })
+  const app = await launchDiffer('04-session-description', [mainEntry, `--session=${sessionPath}`])
   const window = await app.firstWindow()
   await window.waitForLoadState('domcontentloaded')
   await window.waitForSelector('[data-testid="pr-header"]')
   await sleep(1000)
 
-  // Click description toggle
   const descBtn = window.locator('.description-toggle')
   await descBtn.click()
   await sleep(1000)

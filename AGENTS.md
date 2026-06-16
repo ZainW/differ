@@ -47,8 +47,8 @@ Electron + React 19 app for reviewing GitHub/GitLab PRs from the terminal.
 - `pnpm build` runs `typecheck -> electron-vite build -> build:cli` sequentially.
 - Visual test harness uses a **separate** Vite config (`vite.visual.config.ts`) that builds `src/renderer/visual.html -> out/visual/`.
 - Visual test Playwright server runs `vite preview` of that harness (not the Electron app).
-- `shamefully-hoist=true` in `.npmrc`.
-- `postinstall` runs `electron-builder install-app-deps` (native recompilation).
+- `shamefullyHoist: true` in `pnpm-workspace.yaml`.
+- `postinstall` runs `electron-builder install-app-deps` for development installs and skips production-only installs.
 
 ## Typecheck split
 

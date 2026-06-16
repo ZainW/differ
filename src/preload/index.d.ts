@@ -1,8 +1,12 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+import type { PullRequestSession } from '../shared/types/session'
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
+    differ: {
+      platform?: string
+      getSession: () => Promise<PullRequestSession | null>
+      onSessionLoad: (callback: (session: PullRequestSession) => void) => () => void
+      openExternal: (url: string) => Promise<void>
+    }
   }
 }

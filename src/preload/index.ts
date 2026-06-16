@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
 import type { PullRequestSession } from '../shared/types/session'
 
 const api = {
@@ -15,5 +14,4 @@ const api = {
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke('session:open-external', url)
 }
 
-contextBridge.exposeInMainWorld('electron', electronAPI)
 contextBridge.exposeInMainWorld('differ', api)
