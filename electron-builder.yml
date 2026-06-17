@@ -24,8 +24,16 @@ mac:
   gatekeeperAssess: false
   forceCodeSigning: true
   entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - dmg
+    - zip
+    - pkg
 dmg:
   artifactName: ${name}-${version}.${ext}
+pkg:
+  artifactName: ${name}-${version}.${ext}
+  identity: 'ZAIN XERXES WANIA (XU3M3P2M34)'
+  scripts: pkg-scripts
 linux:
   target:
     - AppImage

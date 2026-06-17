@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+target_volume="${2:-/}"
+if [ "$target_volume" = "/" ]; then
+  app_path="/Applications/Differ.app/Contents/MacOS/Differ"
+else
+  app_path="$target_volume/Applications/Differ.app/Contents/MacOS/Differ"
+fi
+bin_dir="/usr/local/bin"
+bin_path="$bin_dir/differ"
+
+if [ -x "$app_path" ]; then
+  mkdir -p "$bin_dir"
+  ln -sf "$app_path" "$bin_path"
+fi
+
+exit 0

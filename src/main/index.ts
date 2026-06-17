@@ -3,10 +3,13 @@ import { readFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { createSessionForCliArgs, formatCliError, parseDifferCliArgs } from '../shared/cli'
+import { writeSession } from '../shared/session'
 import type { PullRequestSession } from '../shared/types/session'
 
 const APP_ID = 'com.zainw.differ'
 let sessionPath: string | null = null
+let cliExitRequested = false
 
 function readSessionFromArgs(): PullRequestSession | null {
   const arg = process.argv.find((a) => a.startsWith('--session='))
@@ -14,6 +17,47 @@ function readSessionFromArgs(): PullRequestSession | null {
   if (!path) return null
   sessionPath = path
   return JSON.parse(readFileSync(path, 'utf8')) as PullRequestSession
+}
+
+function getDirectCliArgs(): string[] | null {
+  if (!app.isPackaged) return null
+  if (process.argv.some((arg) => arg.startsWith('--session=') || arg === '--session')) return null
+
+  const args = process.argv.slice(1).filter((arg) => !arg.startsWith('-psn_'))
+  if (args.length === 0 && !process.stdout.isTTY) return null
+  return args
+}
+
+async function readSessionFromCliArgs(): Promise<PullRequestSession | null> {
+  const args = getDirectCliArgs()
+  if (!args) return readSessionFromArgs()
+
+  try {
+    const parsed = parseDifferCliArgs(args)
+    if (parsed.kind === 'help') {
+      process.stdout.write(parsed.text)
+      cliExitRequested = true
+      app.exit(0)
+      return null
+    }
+
+    const session = await createSessionForCliArgs(parsed.args, process.cwd())
+    sessionPath = writeSession(session)
+
+    if (!parsed.args.open) {
+      console.log(sessionPath)
+      cliExitRequested = true
+      app.exit(0)
+      return null
+    }
+
+    return session
+  } catch (error) {
+    for (const line of formatCliError(error)) console.error(line)
+    cliExitRequested = true
+    app.exit(1)
+    return null
+  }
 }
 
 function createWindow(session: PullRequestSession | null): void {
@@ -65,14 +109,15 @@ async function openExternalUrl(url: string): Promise<void> {
   }
 }
 
-void app.whenReady().then(() => {
+void app.whenReady().then(async () => {
   electronApp.setAppUserModelId(APP_ID)
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  const session = readSessionFromArgs()
+  const session = await readSessionFromCliArgs()
+  if (cliExitRequested) return
 
   ipcMain.handle('session:get', () => session)
   ipcMain.handle('session:open-external', async (_event, url: string) => {

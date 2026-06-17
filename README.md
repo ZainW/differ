@@ -22,13 +22,15 @@ Or set `GITHUB_TOKEN` / `GITLAB_TOKEN` in your environment.
 ## Usage
 
 ```bash
-pnpm differ                              # auto-detect PR for current branch
-pnpm differ 42                           # PR number in current repo
-pnpm differ https://github.com/org/repo/pull/42
-pnpm differ https://gitlab.com/group/repo/-/merge_requests/42
+differ                              # auto-detect PR for current branch
+differ 42                           # PR number in current repo
+differ https://github.com/org/repo/pull/42
+differ https://gitlab.com/group/repo/-/merge_requests/42
 ```
 
 The CLI fetches PR metadata and diff, then opens the Electron review UI.
+
+On macOS, install the `.pkg` release to place `differ` on your shell `PATH`.
 
 ## Development
 
@@ -38,6 +40,16 @@ pnpm differ   # fetches PR and launches via electron-vite dev when not built
 pnpm typecheck
 pnpm test
 ```
+
+## Website
+
+```bash
+pnpm site:dev
+pnpm build:site
+pnpm site:preview
+```
+
+The landing page lives in `site/` and builds to `dist/site/`.
 
 ## Release builds
 
@@ -52,6 +64,8 @@ macOS builds notarize automatically when one supported Apple credential set is p
 - `APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER`
 - `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`
 - `APPLE_KEYCHAIN_PROFILE` with optional `APPLE_KEYCHAIN`
+
+The macOS `.pkg` installer also requires a `Developer ID Installer` signing certificate.
 
 ## Visual regression (Playwright)
 
